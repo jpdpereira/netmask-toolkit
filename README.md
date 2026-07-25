@@ -17,9 +17,46 @@ python netmask.py unmask -i resposta_recebida.txt -o resposta_real.txt  -m mappi
 O ficheiro `mapping.json` e a chave de reversao. **Nunca o commitar nem
 partilhar** — trata-o como uma credencial. O `.gitignore` ja o bloqueia.
 
-Usa `--dry-run` para veres quantos itens seriam mascarados sem escrever
-nada em disco — util para validar um ficheiro novo antes de confiar cegamente
-no regex.
+### Deteccao automatica de vendor
+
+```bash
+python netmask.py mask -i show_run.txt -o masked.txt -m mapping.json --vendor auto
+```
+
+Usa uma heuristica de assinaturas por plataforma (ver `detect_vendor()` em
+`vendors.py`). Se nao conseguir decidir com confianca, cai para `generic`
+e avisa.
+
+### Diretorio inteiro, com mapping partilhado
+
+```bash
+python netmask.py mask   -i ./configs_reais/     -o ./configs_mascaradas/ -m mapping.json --vendor auto
+python netmask.py unmask -i ./configs_mascaradas/ -o ./configs_restauradas/ -m mapping.json
+```
+
+Processa todos os `*.txt` do diretorio com um unico `Masker` partilhado —
+o mesmo valor real (ex: o mesmo vizinho LLDP a aparecer em varios ficheiros)
+mapeia sempre para o mesmo token em todo o lote.
+
+### Pipe (stdin/stdout)
+
+```bash
+cat show_run.txt | python netmask.py mask -i - -o - -m mapping.json --vendor cisco > masked.txt
+```
+
+### Mapping cifrado
+
+```bash
+python netmask.py mask -i show_run.txt -o masked.txt -m mapping.json --vendor cisco --encrypt
+```
+
+Pede uma password interativamente (nunca guardada em disco) e cifra o
+`mapping.json` com Fernet (AES + HMAC), chave derivada via
+PBKDF2-HMAC-SHA256. No `unmask`, a deteccao de ficheiro cifrado e
+automatica — so pede a password se for preciso.
+
+Usa `--dry-run` (em qualquer modo) para veres quantos itens seriam
+mascarados sem escrever nada em disco.
 
 ## Vendors suportados (`--vendor`)
 
@@ -50,23 +87,23 @@ equipamento real. `core.py` (motor generico) nao precisa de ser alterado.
 ## Arquitetura
 
 ```
-core.py      -> motor generico: gestao de tokens, IP/IPv6/MAC (nao conhece vendors)
-vendors.py   -> padroes especificos por plataforma (hostname, descricao, LLDP/CDP)
-netmask.py   -> CLI (argparse), liga core + vendors
+core.py          -> motor generico: gestao de tokens, IP/IPv6/MAC (nao conhece vendors)
+vendors.py       -> padroes especificos por plataforma + deteccao automatica
+crypto_utils.py  -> encriptacao opcional do mapping.json (Fernet + PBKDF2)
+netmask.py       -> CLI (argparse), liga tudo
 ```
 
 ## Roadmap
 
-Ver `docs/roadmap.md` — Fase 2 (multi-vendor) feita. Falta: CI no GitHub
-Actions, fixtures/testes para todos os 8 vendors, encriptacao do
-mapping.json, deteccao automatica de vendor.
+Ver `docs/roadmap.md` — Fases 1 a 4 feitas (ambiente, multi-vendor, testes/CI,
+robustez). Falta: fixtures a partir de outputs reais, README/portefolio final.
 
 ## Instalacao
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
-pip install -r requirements-dev.txt
+pip install -r requirements-dev.txt   # inclui requirements.txt (runtime) + testes/lint
 ```
 
 ## Testes

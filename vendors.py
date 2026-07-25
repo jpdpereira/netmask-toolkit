@@ -104,3 +104,66 @@ def get_profile(vendor):
         raise ValueError(
             f"Vendor '{vendor}' desconhecido. Opcoes: {', '.join(sorted(VENDOR_PROFILES))}"
         )
+
+
+# ---------- deteccao automatica de vendor ----------
+# Cada vendor tem uma lista de "assinaturas" (regex) tipicas da sua sintaxe.
+# O vendor com mais assinaturas encontradas no ficheiro ganha. Isto e uma
+# heuristica, nao uma deteccao garantida -- em caso de duvida ou empate,
+# usa sempre "generic" ou pede ao utilizador para especificar --vendor.
+VENDOR_SIGNATURES = {
+    "cisco": [
+        re.compile(r"^\s*ip address\s+\S+\s+\S+\s*$", _MI),
+        re.compile(r"^!\s*$", re.MULTILINE),
+        re.compile(r"Device ID\s*:", _MI),
+        re.compile(r"^\s*mac-address\s+", _MI),
+    ],
+    "aruba-switch": [
+        re.compile(r'^\s*hostname\s+"', _MI),
+        re.compile(r'^\s*name\s+"', _MI),
+        re.compile(r"^\s*no lacp\s*$", _MI),
+        re.compile(r"^\s*PortDescr\s*:", _MI),
+    ],
+    "aruba-cx": [
+        re.compile(r'^\s*description\s+"', _MI),
+        re.compile(r"Neighbor Port-Description\s*:", _MI),
+        re.compile(r"Neighbor Chassis-ID\s*:", _MI),
+    ],
+    "comware": [
+        re.compile(r"^\s*sysname\s+\S+", _MI),
+        re.compile(r"System name\s*:", _MI),
+        re.compile(r"Chassis ID\s*:", _MI),
+    ],
+    "juniper": [
+        re.compile(r"^\s*set system host-name\s+", _MI),
+        re.compile(r"^\s*set interfaces \S+ unit \d+", _MI),
+        re.compile(r"family inet", _MI),
+    ],
+    "fortios": [
+        re.compile(r"^\s*config system global\s*$", _MI),
+        re.compile(r'^\s*set hostname\s+"', _MI),
+        re.compile(r'^\s*set alias\s+"', _MI),
+    ],
+    "checkpoint": [
+        re.compile(r"^\s*set interface \S+ description\s+", _MI),
+        re.compile(r"^\s*set static-route\s+", _MI),
+    ],
+    "unifi": [
+        re.compile(r"^\s*set system host-name\s+", _MI),
+        re.compile(r"^\s*set interfaces ethernet\s+", _MI),
+    ],
+}
+
+
+def detect_vendor(text):
+    """Devolve (vendor, score) com base em quantas assinaturas batem.
+    Se nenhum vendor tiver pelo menos 1 assinatura, devolve (None, 0)."""
+    scores = {}
+    for vendor, signatures in VENDOR_SIGNATURES.items():
+        scores[vendor] = sum(1 for pattern in signatures if pattern.search(text))
+
+    best_vendor = max(scores, key=scores.get)
+    best_score = scores[best_vendor]
+    if best_score == 0:
+        return None, 0
+    return best_vendor, best_score

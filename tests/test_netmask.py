@@ -5,7 +5,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from core import Masker
-from vendors import VENDOR_PROFILES, get_profile
+from vendors import VENDOR_PROFILES, detect_vendor, get_profile
 
 CISCO_SAMPLE = """hostname SW-CORE01
 !
@@ -204,3 +204,28 @@ def test_all_vendor_profiles_are_well_formed():
     for vendor, patterns in VENDOR_PROFILES.items():
         for category, regex, wrap_quotes in patterns:
             assert regex.groups == 2, f"{vendor}/{category} deveria ter 2 grupos, tem {regex.groups}"
+
+
+@pytest.mark.parametrize(
+    ("sample", "expected_vendor"),
+    [
+        (CISCO_SAMPLE, "cisco"),
+        (ARUBA_SWITCH_SAMPLE, "aruba-switch"),
+        (ARUBA_CX_SAMPLE, "aruba-cx"),
+        (COMWARE_SAMPLE, "comware"),
+        (JUNIPER_SAMPLE, "juniper"),
+        (FORTIOS_SAMPLE, "fortios"),
+        (CHECKPOINT_SAMPLE, "checkpoint"),
+        (UNIFI_SAMPLE, "unifi"),
+    ],
+)
+def test_detect_vendor_identifies_each_sample_correctly(sample, expected_vendor):
+    detected, score = detect_vendor(sample)
+    assert detected == expected_vendor
+    assert score > 0
+
+
+def test_detect_vendor_returns_none_for_unrecognizable_text():
+    detected, score = detect_vendor("isto nao e uma config de rede de todo.\nsó texto normal.\n")
+    assert detected is None
+    assert score == 0

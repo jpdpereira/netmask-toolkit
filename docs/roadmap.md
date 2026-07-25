@@ -32,10 +32,21 @@ quiseres reforcar a confianca, o proximo passo natural e substituir por
 fixtures anonimizadas a partir de outputs reais do teu ambiente (usando o
 proprio netmask.py para as gerar em seguranca).
 
-## Fase 4 - Robustez
-- Multiplos ficheiros/diretorio de uma vez, suporte a stdin/stdout
-- Deteccao automatica de vendor por keywords do ficheiro
-- Encriptacao opcional do mapping.json (Fernet + password)
+## Fase 4 - Robustez (feito)
+- vendors.detect_vendor(): heuristica por assinaturas regex, `--vendor auto`
+  no CLI, testada para os 8 vendors + caso de texto irreconhecivel
+- Modo diretorio: `-i pasta/ -o pasta/` processa todos os *.txt com um
+  unico Masker partilhado (mesmo valor -> mesmo token em todo o lote)
+- Suporte a stdin/stdout: `-i -` / `-o -` para uso em pipe
+- crypto_utils.py: encriptacao opcional do mapping.json com `--encrypt`
+  (Fernet + PBKDF2-HMAC-SHA256, 480k iteracoes, password nunca gravada em
+  disco); deteccao automatica de ficheiro cifrado no unmask
+- 26 testes pytest no total (12 core + 8 deteccao de vendor + 1 caso
+  negativo + 5 de encriptacao)
+
+Nota: a heuristica de deteccao de vendor e probabilistica -- funciona bem
+nas amostras sinteticas testadas, mas com equipamento real pode precisar
+de afinacao das assinaturas em `VENDOR_SIGNATURES` (vendors.py).
 
 ## Fase 5 - Documentacao
 - README completo (feito, a rever com a evolucao do projeto)
