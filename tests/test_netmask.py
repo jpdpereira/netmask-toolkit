@@ -4,9 +4,8 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from core import Masker  # noqa: E402
-from vendors import get_profile, VENDOR_PROFILES  # noqa: E402
-
+from core import Masker
+from vendors import VENDOR_PROFILES, get_profile
 
 CISCO_SAMPLE = """hostname SW-CORE01
 !
@@ -67,6 +66,43 @@ set interfaces ge-0/0/0 description "Uplink to ISP"
 set interfaces ge-0/0/0 unit 0 family inet address 198.51.100.1/30
 """
 
+ARUBA_CX_SAMPLE = """hostname SW-CX-CORE01
+interface 1/1/1
+    description "Uplink to Distribution"
+    no shutdown
+interface vlan10
+    ip address 10.0.10.1/24
+!
+show lldp neighbor-info
+  Port                : 1/1/1
+  Neighbor Name       : SW-CX-DIST01
+  Neighbor Port-Description : Downlink to Access
+  Neighbor Chassis-ID : 00:11:22:33:44:55
+"""
+
+COMWARE_SAMPLE = """sysname CORE-SW01
+interface GigabitEthernet1/0/1
+ description Trunk-to-Distribution
+ ip address 172.16.5.1 255.255.255.0
+#
+display lldp neighbor-information
+  System name       : ACCESS-SW02
+  Port description  : Uplink to Core
+  Chassis ID        : 001a-2b3c-4d5e
+"""
+
+CHECKPOINT_SAMPLE = """set hostname FW-GATEWAY01
+set interface eth0 description "External WAN"
+set interface eth1 description "Internal LAN"
+set static-route 0.0.0.0/0 nexthop gateway address 203.0.113.1 priority 1
+"""
+
+UNIFI_SAMPLE = """set system host-name EDGE-ROUTER01
+set interfaces ethernet eth0 description "WAN"
+set interfaces ethernet eth1 description "LAN-Trunk"
+set interfaces ethernet eth1 address 192.168.1.1/24
+"""
+
 
 def _roundtrip(sample, vendor):
     profile = get_profile(vendor)
@@ -107,6 +143,40 @@ def test_juniper_roundtrip_is_lossless():
     assert "MX-EDGE01" not in masked
     assert "Uplink to ISP" not in masked
     assert "198.51.100.1" not in masked
+
+
+def test_aruba_cx_roundtrip_is_lossless():
+    masked, restored = _roundtrip(ARUBA_CX_SAMPLE, "aruba-cx")
+    assert restored == ARUBA_CX_SAMPLE
+    assert "SW-CX-CORE01" not in masked
+    assert "Uplink to Distribution" not in masked
+    assert "SW-CX-DIST01" not in masked
+    assert "10.0.10.1" not in masked
+
+
+def test_comware_roundtrip_is_lossless():
+    masked, restored = _roundtrip(COMWARE_SAMPLE, "comware")
+    assert restored == COMWARE_SAMPLE
+    assert "CORE-SW01" not in masked
+    assert "Trunk-to-Distribution" not in masked
+    assert "ACCESS-SW02" not in masked
+    assert "172.16.5.1" not in masked
+
+
+def test_checkpoint_roundtrip_is_lossless():
+    masked, restored = _roundtrip(CHECKPOINT_SAMPLE, "checkpoint")
+    assert restored == CHECKPOINT_SAMPLE
+    assert "FW-GATEWAY01" not in masked
+    assert "External WAN" not in masked
+    assert "203.0.113.1" not in masked
+
+
+def test_unifi_roundtrip_is_lossless():
+    masked, restored = _roundtrip(UNIFI_SAMPLE, "unifi")
+    assert restored == UNIFI_SAMPLE
+    assert "EDGE-ROUTER01" not in masked
+    assert "LAN-Trunk" not in masked
+    assert "192.168.1.1" not in masked
 
 
 def test_no_false_positive_on_timestamp():

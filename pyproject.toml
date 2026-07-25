@@ -1,0 +1,7 @@
+[tool.ruff]
+line-length = 110
+
+[tool.ruff.lint]
+# EXE002: o Cowork/sandbox nao permite alterar a bit de execucao de alguns
+# ficheiros neste repo; nao e um problema real de estilo, so ruido.
+ignore = ["EXE002"]

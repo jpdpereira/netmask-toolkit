@@ -19,10 +19,18 @@ sintaxe tipica de cada plataforma, nao de outputs reais capturados no
 terreno. Ao usar com um equipamento real, se algum campo escapar ao
 mascaramento, o ajuste e sempre so em vendors.py.
 
-## Fase 3 - Testes e CI
-- Fixtures reais (anonimizadas) capturadas do teu ambiente, uma por vendor em uso
-- Testes de round-trip para os restantes vendors (aruba-cx, comware, checkpoint, unifi)
-- GitHub Actions (pytest + ruff em cada push)
+## Fase 3 - Testes e CI (feito)
+- Round-trip testado para os 8 vendors (cisco, aruba-switch, aruba-cx,
+  comware, juniper, fortios, checkpoint, unifi) -- 12 testes pytest no total
+- pyproject.toml com config do ruff (ignora EXE002, irrelevante neste ambiente)
+- GitHub Actions (.github/workflows/ci.yml): corre ruff + pytest em Python
+  3.10 e 3.12, em cada push/PR para main
+
+Nota: as amostras de teste sao sinteticas (escritas a partir do
+conhecimento da sintaxe de cada plataforma), nao capturas reais. Se
+quiseres reforcar a confianca, o proximo passo natural e substituir por
+fixtures anonimizadas a partir de outputs reais do teu ambiente (usando o
+proprio netmask.py para as gerar em seguranca).
 
 ## Fase 4 - Robustez
 - Multiplos ficheiros/diretorio de uma vez, suporte a stdin/stdout

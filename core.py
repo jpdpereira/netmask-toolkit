@@ -12,10 +12,11 @@ Separar isto de vendors.py e o que permite adicionar suporte a uma nova
 plataforma sem tocar neste ficheiro.
 """
 
-import re
-import json
 import ipaddress
+import json
+import re
 from pathlib import Path
+from typing import ClassVar
 
 
 class Masker:
@@ -39,7 +40,7 @@ class Masker:
         return token
 
     # ---------- padroes simples (universais, qualquer vendor) ----------
-    SIMPLE_PATTERNS = [
+    SIMPLE_PATTERNS: ClassVar[list] = [
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5}\b")),
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\b")),
         # candidato amplo para IPv6 (inclui notacao comprimida "::");
