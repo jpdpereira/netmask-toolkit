@@ -33,6 +33,9 @@ VENDOR_PROFILES = {
         ("DESC", re.compile(r"^(\s*description\s+)(.+)$", _MI), False),
         ("NEIGHBOR", re.compile(r"^(\s*(?:System Name|Device ID)\s*[:\-]\s*)(\S+)", _MI), False),
         ("PORTID", re.compile(r"^(\s*Port ID \(outgoing port\)\s*[:\-]\s*)(.+)$", _MI), False),
+        ("SNMP_COMMUNITY", re.compile(r"^(\s*snmp-server community\s+)(\S+)", _MI), False),
+        ("SNMP_CONTACT", re.compile(r"^(\s*snmp-server contact\s+)(.+)$", _MI), False),
+        ("SNMP_LOCATION", re.compile(r"^(\s*snmp-server location\s+)(.+)$", _MI), False),
     ],
 
     # HPE Aruba AOS-Switch (ex-ProVision/ProCurve: 2530, 2920, 2930...)
@@ -41,6 +44,10 @@ VENDOR_PROFILES = {
         ("DESC", re.compile(r'^(\s*name\s+)"([^"]*)"', _MI), True),          # "description" chama-se "name" nesta plataforma
         ("NEIGHBOR", re.compile(r"^(\s*SysName\s*:\s*)(\S+)", _MI), False),  # show lldp info remote-device
         ("PORTID", re.compile(r"^(\s*PortDescr\s*:\s*)(.+)$", _MI), False),
+        # credencial SNMP (equivalente a uma password) -- gap real encontrado ao testar com dados reais
+        ("SNMP_COMMUNITY", re.compile(r'^(\s*snmp-server community\s+)"([^"]*)"', _MI), True),
+        ("SNMP_CONTACT", re.compile(r'(snmp-server contact\s+)"([^"]*)"', _MI), True),
+        ("SNMP_LOCATION", re.compile(r'(location\s+)"([^"]*)"', _MI), True),
     ],
 
     # HPE Aruba AOS-CX
@@ -93,6 +100,9 @@ VENDOR_PROFILES = {
         ("DESC", re.compile(r"^(\s*description\s+)(.+)$", _MI), False),
         ("NEIGHBOR", re.compile(r"^(\s*(?:System Name|Device ID|SysName)\s*[:\-]\s*)(\S+)", _MI), False),
         ("PORTID", re.compile(r"^(\s*(?:Port ID \(outgoing port\)|PortDescr|Port [Dd]escription)\s*[:\-]\s*)(.+)$", _MI), False),
+        ("SNMP_COMMUNITY", re.compile(r"^(\s*snmp-server community\s+)(\S+)", _MI), False),
+        ("SNMP_CONTACT", re.compile(r"^(\s*snmp-server contact\s+)(.+)$", _MI), False),
+        ("SNMP_LOCATION", re.compile(r"^(\s*snmp-server location\s+)(.+)$", _MI), False),
     ],
 }
 

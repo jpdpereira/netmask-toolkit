@@ -29,6 +29,10 @@ System Name: SW-ACCESS02.corp.local
 show mac address-table
   1    aabb.ccdd.eeff    DYNAMIC     Gi1/0/3
 !
+snmp-server community public-fake RO
+snmp-server contact Network Team
+snmp-server location Datacenter Floor 2
+!
 SW-CORE01# show run
 SW-CORE01(config)# interface vlan 10
 """
@@ -41,6 +45,8 @@ exit
 vlan 10
    ip address 192.168.10.1 255.255.255.0
 exit
+snmp-server community "fake-community-string"
+snmp-server contact "Network Team" location "Datacenter Floor 2"
 show lldp info remote-device 1
 
   Port : 1
@@ -119,6 +125,9 @@ def test_cisco_roundtrip_is_lossless():
     assert "SW-CORE01" not in masked
     assert "00:1a:2b:3c:4d:5e" not in masked
     assert "2001:db8:abcd:12::1" not in masked
+    assert "public-fake" not in masked  # snmp-server community -- e uma credencial
+    assert "Network Team" not in masked
+    assert "Datacenter Floor 2" not in masked
 
 
 def test_aruba_switch_roundtrip_is_lossless():
@@ -128,6 +137,9 @@ def test_aruba_switch_roundtrip_is_lossless():
     assert "Uplink to Core" not in masked
     assert "SW-CORE01" not in masked  # vem do SysName do vizinho
     assert "30 e1 71 aa bb cc" not in masked  # ChassisId, MAC separado por espacos
+    assert "fake-community-string" not in masked  # gap real: SNMP community nao mascarada
+    assert "Network Team" not in masked
+    assert "Datacenter Floor 2" not in masked
 
 
 def test_mac_address_space_separated_is_masked():
