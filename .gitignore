@@ -1,0 +1,19 @@
+# Nunca commitar dados reais nem chaves de reversao
+*.mapping.json
+mapping.json
+*_real.txt
+*_masked.txt
+sample_config*.txt
+sample_log*.txt
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
