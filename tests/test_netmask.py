@@ -127,6 +127,17 @@ def test_aruba_switch_roundtrip_is_lossless():
     assert "SW-ACCESS-A1" not in masked
     assert "Uplink to Core" not in masked
     assert "SW-CORE01" not in masked  # vem do SysName do vizinho
+    assert "30 e1 71 aa bb cc" not in masked  # ChassisId, MAC separado por espacos
+
+
+def test_mac_address_space_separated_is_masked():
+    """ChassisId de HP/Aruba usa MAC separado por espacos (ex: 'ec eb b8 a8 99 00'),
+    formato diferente de ':'/'-'/'.' -- gap real encontrado ao testar com dados reais."""
+    masker = Masker()
+    text = "ChassisId    : ec eb b8 a8 99 00\n"
+    masked = masker.mask(text, get_profile("generic"))
+    assert "ec eb b8 a8 99 00" not in masked
+    assert masker.unmask(masked) == text
 
 
 def test_fortios_roundtrip_is_lossless():

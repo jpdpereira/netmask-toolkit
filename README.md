@@ -1,10 +1,34 @@
 # netmask-toolkit
 
+![CI](https://github.com/jpdpereira/netmask-toolkit/actions/workflows/ci.yml/badge.svg)
+
 Mascara e reverte informacao sensivel (IPs, MACs, hostnames, descricoes de
 porta, vizinhos LLDP/CDP) em ficheiros de configuracao de rede
 (`show running-config`, `show logs`, `show cdp/lldp neighbors`, etc.),
 para que possam ser partilhados com ferramentas de IA ou terceiros sem
 expor dados reais.
+
+## Porque existe
+
+Analisar configs de rede com ajuda de IA e util, mas colar um `show
+running-config` real numa ferramenta externa expoe IPs, MACs, hostnames e
+topologia da rede. Este toolkit resolve isso com tokenizacao reversivel:
+mascara tudo o que e sensivel antes de sair da tua maquina, e reverte
+depois de forma exata -- sem perder nenhuma informacao pelo caminho.
+
+```mermaid
+flowchart LR
+    A[Config real<br/>show run / show log] -->|netmask.py mask| B[Config mascarada<br/>IP_001, HOSTNAME_001, ...]
+    B -->|partilhavel| C[IA / terceiro<br/>Claude, ChatGPT, colega]
+    C -->|resposta com tokens| D[Resposta mascarada]
+    D -->|netmask.py unmask| E[Resposta com dados reais]
+    F[(mapping.json<br/>fica sempre local)] -.chave de reversao.-> B
+    F -.-> E
+```
+
+O `mapping.json` (passo F) nunca sai da tua maquina — e ele que torna o
+processo reversivel, e por isso e tratado como uma credencial (protegido
+pelo `.gitignore`, e opcionalmente cifravel com `--encrypt`).
 
 ## Fluxo de uso
 
@@ -95,8 +119,15 @@ netmask.py       -> CLI (argparse), liga tudo
 
 ## Roadmap
 
-Ver `docs/roadmap.md` — Fases 1 a 4 feitas (ambiente, multi-vendor, testes/CI,
-robustez). Falta: fixtures a partir de outputs reais, README/portefolio final.
+Ver `docs/roadmap.md` — Fases 1 a 5 feitas (ambiente, multi-vendor,
+testes/CI, robustez, documentacao). Proximo passo natural: substituir as
+amostras de teste sinteticas por fixtures anonimizadas a partir de
+outputs reais do teu ambiente.
+
+## Nota para entrevista
+
+Ver `docs/interview-notes.md` — como enquadrar este projeto numa
+entrevista tecnica de NetDevOps/Network Automation.
 
 ## Instalacao
 

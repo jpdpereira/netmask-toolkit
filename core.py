@@ -43,6 +43,8 @@ class Masker:
     SIMPLE_PATTERNS: ClassVar[list] = [
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5}\b")),
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\b")),
+        # formato separado por espacos, comum em ChassisId de HP/Aruba (ex: "ec eb b8 a8 99 00")
+        ("MAC", re.compile(r"\b[0-9A-Fa-f]{2}(?: [0-9A-Fa-f]{2}){5}\b")),
         # candidato amplo para IPv6 (inclui notacao comprimida "::");
         # valida-se a seguir com o modulo ipaddress para evitar falsos positivos
         ("IPV6", re.compile(r"\b[0-9A-Fa-f]{0,4}(?::[0-9A-Fa-f]{0,4}){2,7}(?:/\d{1,3})?\b")),
