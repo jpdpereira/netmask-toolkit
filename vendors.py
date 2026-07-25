@@ -70,6 +70,9 @@ VENDOR_PROFILES = {
         ("SNMP_COMMUNITY", re.compile(r"^(\s*snmp-agent community (?:read|write)(?: cipher)?\s+)(\S+)", _MI), False),
         ("SNMP_CONTACT", re.compile(r"^(\s*snmp-agent sys-info contact\s+)(.+)$", _MI), False),
         ("SNMP_LOCATION", re.compile(r"^(\s*snmp-agent sys-info location\s+)(.+)$", _MI), False),
+        # "securityname" na linha de target-host (trap) -- tambem e uma credencial,
+        # aparece a meio da linha, nao no inicio
+        ("SNMP_COMMUNITY", re.compile(r"(params securityname\s+)(\S+)", _MI), False),
     ],
 
     # Juniper JunOS (estilo "set")

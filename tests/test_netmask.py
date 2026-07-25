@@ -104,6 +104,7 @@ vlan 10
 snmp-agent community read fake-ro-string
 snmp-agent sys-info contact Network Team
 snmp-agent sys-info location Datacenter Floor 2
+snmp-agent target-host trap address udp-domain 172.16.5.254 params securityname fake-trap-secret
 #
 display lldp neighbor-information
   System name       : ACCESS-SW02
@@ -203,6 +204,7 @@ def test_comware_roundtrip_is_lossless():
     assert "Datacenter Floor 2" not in masked
     assert "Servers-VLAN" not in masked  # vlan "name" -- gap real encontrado em teste real
     assert "Critical-Server-Segment" not in masked
+    assert "fake-trap-secret" not in masked  # securityname do target-host -- credencial
 
 
 def test_checkpoint_roundtrip_is_lossless():
