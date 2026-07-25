@@ -62,8 +62,14 @@ VENDOR_PROFILES = {
     "comware": [
         ("HOSTNAME", re.compile(r"^(\s*sysname\s+)(\S+)", _MI), False),
         ("DESC", re.compile(r"^(\s*description\s+)(.+)$", _MI), False),
+        # em Comware, uma vlan pode ter "name" (curto) e "description" (livre) como campos distintos
+        ("VLAN_NAME", re.compile(r"^(\s*name\s+)(.+)$", _MI), False),
         ("NEIGHBOR", re.compile(r"^(\s*System name\s*:\s*)(\S+)", _MI), False),
         ("PORTID", re.compile(r"^(\s*Port description\s*:\s*)(.+)$", _MI), False),
+        # credencial SNMP -- sintaxe "snmp-agent" (diferente do "snmp-server" da Cisco/Aruba-Switch)
+        ("SNMP_COMMUNITY", re.compile(r"^(\s*snmp-agent community (?:read|write)(?: cipher)?\s+)(\S+)", _MI), False),
+        ("SNMP_CONTACT", re.compile(r"^(\s*snmp-agent sys-info contact\s+)(.+)$", _MI), False),
+        ("SNMP_LOCATION", re.compile(r"^(\s*snmp-agent sys-info location\s+)(.+)$", _MI), False),
     ],
 
     # Juniper JunOS (estilo "set")
@@ -123,10 +129,12 @@ def get_profile(vendor):
 # usa sempre "generic" ou pede ao utilizador para especificar --vendor.
 VENDOR_SIGNATURES = {
     "cisco": [
-        re.compile(r"^\s*ip address\s+\S+\s+\S+\s*$", _MI),
+        # nota: "ip address X Y" NAO e assinatura fiavel -- e sintaxe
+        # partilhada com o Comware. Usar so marcadores exclusivos do IOS.
+        re.compile(r"^version \d+\.\d+", _MI),
         re.compile(r"^!\s*$", re.MULTILINE),
         re.compile(r"Device ID\s*:", _MI),
-        re.compile(r"^\s*mac-address\s+", _MI),
+        re.compile(r"^\s*line vty \d+ \d+", _MI),
     ],
     "aruba-switch": [
         re.compile(r'^\s*hostname\s+"', _MI),
@@ -143,6 +151,9 @@ VENDOR_SIGNATURES = {
         re.compile(r"^\s*sysname\s+\S+", _MI),
         re.compile(r"System name\s*:", _MI),
         re.compile(r"Chassis ID\s*:", _MI),
+        re.compile(r"^\s*quit\s*$", _MI),   # sai de um contexto -- Comware usa "quit", Cisco usa "exit"/"end"
+        re.compile(r"^#\s*$", re.MULTILINE),  # separador de secao (Cisco usa "!")
+        re.compile(r"^\s*snmp-agent\s+", _MI),
     ],
     "juniper": [
         re.compile(r"^\s*set system host-name\s+", _MI),

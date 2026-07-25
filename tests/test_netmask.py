@@ -7,7 +7,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from core import Masker
 from vendors import VENDOR_PROFILES, detect_vendor, get_profile
 
-CISCO_SAMPLE = """hostname SW-CORE01
+CISCO_SAMPLE = """version 15.2
+!
+hostname SW-CORE01
 !
 interface GigabitEthernet1/0/1
  description Uplink to SW-CORE01
@@ -32,6 +34,9 @@ show mac address-table
 snmp-server community public-fake RO
 snmp-server contact Network Team
 snmp-server location Datacenter Floor 2
+!
+line vty 0 4
+ transport input ssh
 !
 SW-CORE01# show run
 SW-CORE01(config)# interface vlan 10
@@ -90,6 +95,15 @@ COMWARE_SAMPLE = """sysname CORE-SW01
 interface GigabitEthernet1/0/1
  description Trunk-to-Distribution
  ip address 172.16.5.1 255.255.255.0
+ quit
+vlan 10
+ name Servers-VLAN
+ description Critical-Server-Segment
+ quit
+#
+snmp-agent community read fake-ro-string
+snmp-agent sys-info contact Network Team
+snmp-agent sys-info location Datacenter Floor 2
 #
 display lldp neighbor-information
   System name       : ACCESS-SW02
@@ -184,6 +198,11 @@ def test_comware_roundtrip_is_lossless():
     assert "Trunk-to-Distribution" not in masked
     assert "ACCESS-SW02" not in masked
     assert "172.16.5.1" not in masked
+    assert "fake-ro-string" not in masked  # snmp-agent community -- credencial
+    assert "Network Team" not in masked
+    assert "Datacenter Floor 2" not in masked
+    assert "Servers-VLAN" not in masked  # vlan "name" -- gap real encontrado em teste real
+    assert "Critical-Server-Segment" not in masked
 
 
 def test_checkpoint_roundtrip_is_lossless():
