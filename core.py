@@ -50,6 +50,13 @@ class Masker:
     })
     PROPAGATE_MIN_LEN: ClassVar[int] = 4  # evita propagar nomes curtos/genericos
 
+    # tabelas de largura fixa sem "Campo :" para ancorar regex:
+    # (regex do cabecalho, {nome da coluna: categoria do token})
+    TABLE_COLUMNS: ClassVar[list] = [
+        # AOS-Switch: show lldp info remote-device (resumo)
+        (re.compile(r"^[ \t]*LocalPort[ \t]*\|.*\bSysName\b"), {"PortDescr": "PORTID", "SysName": "NEIGHBOR"}),
+    ]
+
     SIMPLE_PATTERNS: ClassVar[list] = [
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5}\b")),
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\b")),
@@ -100,6 +107,48 @@ class Masker:
             text = pattern.sub(repl, text)
         return text
 
+    def _mask_table_columns(self, text):
+        """Mascara colunas de tabelas de largura fixa (ex: SysName no resumo do
+        show lldp info remote-device). Fronteiras das colunas vem da linha
+        separadora ('--- + ---'), com fallback para as posicoes do cabecalho.
+        Linhas de dados lidas ate a primeira linha vazia (ou sem '|', se o
+        cabecalho o tiver). Colunas da direita para a esquerda, para que a
+        troca valor->token nao desloque os offsets das restantes."""
+        lines = text.split("\n")
+        i = 0
+        while i < len(lines):
+            spec = next((cols for hdr, cols in self.TABLE_COLUMNS if hdr.match(lines[i])), None)
+            if spec is None or i + 1 >= len(lines):
+                i += 1
+                continue
+            header = list(re.finditer(r"\S+", lines[i]))
+            sep = lines[i + 1]
+            is_sep = bool(sep.strip()) and set(sep.strip()) <= set("-+ ")
+            groups = list(re.finditer(r"\S+", sep)) if is_sep else []
+            bounds = groups if len(groups) == len(header) else header
+            starts = [b.start() for b in bounds]
+            spans = [
+                (starts[idx], starts[idx + 1] if idx + 1 < len(starts) else None, spec[h.group(0)])
+                for idx, h in enumerate(header)
+                if h.group(0) in spec
+            ]
+            needs_pipe = "|" in lines[i]
+            j = i + (2 if is_sep else 1)
+            while j < len(lines) and lines[j].strip() and (not needs_pipe or "|" in lines[j]):
+                row = lines[j]
+                for start, end, category in sorted(spans, reverse=True):
+                    cell = row[start:end]
+                    value = cell.strip()
+                    if not value or value in self.KEEP_VALUES:
+                        continue
+                    token = self._get_token(category, value)
+                    tail = row[end:] if end is not None else ""
+                    row = row[:start] + cell.replace(value, token, 1) + tail
+                lines[j] = row
+                j += 1
+            i = j
+        return "\n".join(lines)
+
     def _propagate_known_values(self, text):
         """Propaga valores ja aprendidos em linhas com contexto (hostname,
         nomes de porta/VLAN, communities, users, keys) a qualquer outro sitio
@@ -121,6 +170,7 @@ class Masker:
     # ---------- API publica ----------
     def mask(self, text, line_patterns):
         text = self._mask_line_patterns(text, line_patterns)  # 1. contexto do vendor
+        text = self._mask_table_columns(text)                 # 1b. tabelas de largura fixa
         text = self._propagate_known_values(text)             # 2. propaga valores aprendidos
         text = self._mask_simple_patterns(text)                 # 3. IP/MAC genericos
         return text

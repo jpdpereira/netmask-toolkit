@@ -32,6 +32,8 @@ LEAKS = [
     ("E-vlan-name-tabela", "LAB-USERS-PISO1"),
     ("E-port-name-tabela", "LAB-AP-03"),
     ("F-lldp-sysname-tabela", "SW-LAB-CORE-01"),
+    ("F-lldp-sysname-com-portdescr-espacos", "SW-LAB-DIST-02"),
+    ("F-lldp-portdescr-espacos", "Uplink to"),
     ("G-8021x-username", "lab.user01"),
     ("H-hostname-em-ficheiro", "SW-LAB-ACC-01"),
     ("I-mac-no-stack-id", "0a1b2c-3d4e00"),
@@ -46,7 +48,7 @@ def test_no_leak(result, gap_id, secret):
 
 
 # valores tecnicos que TEM de continuar legiveis (sem falsos positivos)
-KEEP = ["WC.16.10.0009", "JL322A", "DEFAULT_VLAN", 'name "DEFAULT_VLAN"', "Commander", "Ring", "8021X"]
+KEEP = ["WC.16.10.0009", "JL322A", "DEFAULT_VLAN", 'name "DEFAULT_VLAN"', "Commander", "LocalPort | ChassisId", "Ring", "8021X"]
 
 
 @pytest.mark.parametrize("value", KEEP)

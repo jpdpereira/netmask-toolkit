@@ -69,6 +69,7 @@ SW-LAB-ACC-01# show lldp info remote-device
   LocalPort | ChassisId                 PortId PortDescr SysName
   --------- + ------------------------- ------ --------- ----------------------
   1/1/49    | 0a1b2c-3d4e70             25     25        SW-LAB-CORE-01
+  1/1/50    | 0a1b2c-3d4e72             1/1/1  Uplink to SW-LAB-DIST-02
 
 SW-LAB-ACC-01# show port-access clients
 
