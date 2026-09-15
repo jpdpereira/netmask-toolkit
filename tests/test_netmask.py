@@ -273,3 +273,33 @@ def test_detect_vendor_returns_none_for_unrecognizable_text():
     detected, score = detect_vendor("isto nao e uma config de rede de todo.\nsó texto normal.\n")
     assert detected is None
     assert score == 0
+
+
+def test_mac_address_hpe_aos_switch_format_is_masked():
+    """AOS-Switch (2530/2920/2930) mostra MACs como 'xxxxxx-xxxxxx' em
+    show mac-address, show arp e show port-access clients -- formato
+    diferente de ':'/'-' (pares), '.' (Cisco) e espacos (ChassisId)."""
+    masker = Masker()
+    text = (
+        "show mac-address\n"
+        " MAC Address   Port    VLAN\n"
+        " ------------- ------- ----\n"
+        " 0a1b2c-3d4e5f 1/1/12  20\n"
+        " 0A1B2C-3D4E60 1/1/13  20\n"
+        "show arp\n"
+        "  IP Address       MAC Address       Type    Port\n"
+        "  10.99.20.5       0a1b2c-3d4e5f     dynamic 1/1/12\n"
+        "Software revision  : WC.16.10.0009\n"
+    )
+    masked = masker.mask(text, get_profile("aruba-switch"))
+
+    # nenhum MAC em claro (minusculas e maiusculas)
+    assert "0a1b2c-3d4e5f" not in masked
+    assert "0A1B2C-3D4E60" not in masked
+    # consistencia: o mesmo MAC gera o mesmo token nas duas tabelas
+    mac_tokens = [t for t in masker.mapping if t.startswith("MAC_")]
+    assert len(mac_tokens) == 2
+    # sem falso positivo: versao de firmware tem de ficar intacta
+    assert "WC.16.10.0009" in masked
+    # roundtrip exato
+    assert masker.unmask(masked) == text

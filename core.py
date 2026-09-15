@@ -43,6 +43,7 @@ class Masker:
     SIMPLE_PATTERNS: ClassVar[list] = [
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5}\b")),
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\b")),
+        ("MAC", re.compile(r"\b[0-9A-Fa-f]{6}-[0-9A-Fa-f]{6}\b")),  # HPE AOS-Switch: xxxxxx-xxxxxx
         # formato separado por espacos, comum em ChassisId de HP/Aruba (ex: "ec eb b8 a8 99 00")
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{2}(?: [0-9A-Fa-f]{2}){5}\b")),
         # candidato amplo para IPv6 (inclui notacao comprimida "::");
