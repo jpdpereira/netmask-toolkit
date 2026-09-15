@@ -51,3 +51,26 @@ de afinacao das assinaturas em `VENDOR_SIGNATURES` (vendors.py).
 ## Fase 5 - Documentacao
 - README completo (feito, a rever com a evolucao do projeto)
 - Diagrama do pipeline mask -> IA -> unmask
+
+## Fase 5.1 - imc_mask.py (feito)
+Ferramenta separada de `netmask.py`, para exports CSV do HPE IMC
+(projeto de validacao de inventario). Diferente do motor de texto livre:
+trabalha por coluna, com uma regra por campo.
+
+- `IP Address` -> mascara so os 2 primeiros octetos, mapeamento
+  consistente por prefixo (10.45.x.x -> 10.1.x.x sempre)
+- `Location` -> codigo sequencial (SITE-A, SITE-B, ...)
+- `Serial Number` -> token sequencial (SN-0001, ...), mesma serie real =
+  mesmo token sempre (critico para nao contar o mesmo equipamento 2x)
+- `Rack` -> token sequencial (RACK-01, ...)
+- `Contact` -> coluna removida por completo (dado pessoal)
+- restantes colunas mantidas intactas
+- mapping (`imc_mapping.json`) persistente entre execucoes -- um export
+  do mes seguinte reutiliza os mesmos tokens para os mesmos equipamentos
+- deteta automaticamente `,` vs `;` como separador (exports Excel PT)
+- 9 testes pytest (36 no total do projeto)
+
+Nota: cobre por agora o export de dispositivos (File 1). O export de
+alarmes (File 2), com mascaramento de IPs embutidos no campo
+`Description`, fica para uma proxima iteracao -- ainda nao foram
+fornecidos os cabecalhos desse ficheiro.

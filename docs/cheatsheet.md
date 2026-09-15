@@ -115,6 +115,32 @@ direito num separador → **"Select for Compare"**, botão direito no outro →
 
 ---
 
+## 2.1 IMC — mascarar CSVs de inventário (`imc_mask.py`)
+
+Ferramenta separada, para exports CSV do IMC (dispositivos). Não usa o
+`netmask.py` — é outro script, no mesmo repositório.
+
+```bash
+python3 imc_mask.py mask -i ~/netmask-testes/devices.csv -o ~/netmask-testes/devices_masked.csv -m ~/netmask-testes/imc_mapping.json
+```
+
+- `-i` — CSV real exportado do IMC
+- `-o` — CSV mascarado (este é o que podes partilhar)
+- `-m` — mapping persistente (nunca partilhar; guarda sempre no mesmo
+  caminho para reaproveitar os tokens em exports futuros do mesmo
+  inventário)
+
+Regras aplicadas: IP (só 2 primeiros octetos mascarados), `Location` →
+`SITE-A/B/...`, `Serial Number` → `SN-0001/...` (consistente por série
+real), `Rack` → `RACK-01/...`, `Contact` removida por completo. Todas as
+outras colunas ficam intactas.
+
+Inspeciona sempre o `_masked.csv` antes de partilhar (mesma regra de
+ouro do ponto 6). Cobre por agora só o export de dispositivos — o de
+alarmes ainda não foi construído.
+
+---
+
 ## 3. Modo diretório (vários ficheiros de uma vez)
 
 ```bash
@@ -178,6 +204,7 @@ core.py          -> motor generico (tokens, IP/IPv6/MAC)
 vendors.py       -> padroes por plataforma + deteccao automatica (VENDOR_SIGNATURES)
 crypto_utils.py  -> encriptacao do mapping.json
 netmask.py       -> CLI (o que corres no terminal)
+imc_mask.py      -> CLI separado, mascaramento de CSVs de inventario IMC
 tests/           -> testes automaticos (pytest)
 docs/roadmap.md          -> historico e proximos passos do projeto
 docs/interview-notes.md  -> como falar deste projeto numa entrevista
