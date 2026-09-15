@@ -48,6 +48,14 @@ VENDOR_PROFILES = {
         ("SNMP_COMMUNITY", re.compile(r'^(\s*snmp-server community\s+)"([^"]*)"', _MI), True),
         ("SNMP_CONTACT", re.compile(r'(snmp-server contact\s+)"([^"]*)"', _MI), True),
         ("SNMP_LOCATION", re.compile(r'(location\s+)"([^"]*)"', _MI), True),
+        # chaves AAA (visiveis com include-credentials; cobre encrypted-key)
+        ("AAA_KEY", re.compile(r'^([ \t]*(?:tacacs|radius)-server host[ \t]+\S+.*?[ \t](?:encrypted-)?key[ \t]+)"([^"]*)"', _MI), True),
+        ("SNMPV3_USER", re.compile(r'^([ \t]*snmpv3 user[ \t]+)"([^"]*)"', _MI), True),
+        # show system: sem aspas; nao consome espacos finais (roundtrip exato)
+        ("SNMP_CONTACT", re.compile(r"^([ \t]*System Contact[ \t]*:[ \t]*)(\S(?:[^\n]*\S)?)", _MI), False),
+        ("SNMP_LOCATION", re.compile(r"^([ \t]*System Location[ \t]*:[ \t]*)(\S(?:[^\n]*\S)?)", _MI), False),
+        # show port-access clients: username imediatamente antes de um MAC HPE
+        ("USERNAME", re.compile(r"^([ \t]*\d+(?:/\d+){0,2}[ \t]+)([^\s|]\S*)(?=[ \t]+[0-9A-Fa-f]{6}-[0-9A-Fa-f]{6}\b)", _MI), False),
     ],
 
     # HPE Aruba AOS-CX

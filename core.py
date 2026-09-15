@@ -40,10 +40,21 @@ class Masker:
         return token
 
     # ---------- padroes simples (universais, qualquer vendor) ----------
+    # valores default/tecnicos que nunca sao mascarados (evita ruido)
+    KEEP_VALUES: ClassVar[frozenset] = frozenset({"DEFAULT_VLAN"})
+    # categorias cujo valor, aprendido numa linha com contexto, e propagado
+    # ao resto do texto (tabelas de show, prompts, nomes de ficheiro)
+    PROPAGATE_CATEGORIES: ClassVar[frozenset] = frozenset({
+        "HOSTNAME", "DESC", "NEIGHBOR", "SNMP_COMMUNITY", "SNMP_CONTACT",
+        "SNMP_LOCATION", "SNMPV3_USER", "USERNAME", "AAA_KEY",
+    })
+    PROPAGATE_MIN_LEN: ClassVar[int] = 4  # evita propagar nomes curtos/genericos
+
     SIMPLE_PATTERNS: ClassVar[list] = [
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5}\b")),
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\b")),
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{6}-[0-9A-Fa-f]{6}\b")),  # HPE AOS-Switch: xxxxxx-xxxxxx
+        ("STACK_ID", re.compile(r"\b[0-9A-Fa-f]{4}[0-9A-Fa-f]{6}-[0-9A-Fa-f]{6}\b")),  # show stacking
         # formato separado por espacos, comum em ChassisId de HP/Aruba (ex: "ec eb b8 a8 99 00")
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{2}(?: [0-9A-Fa-f]{2}){5}\b")),
         # candidato amplo para IPv6 (inclui notacao comprimida "::");
@@ -80,6 +91,8 @@ class Masker:
         for category, pattern, wrap_quotes in line_patterns:
             def repl(m, category=category, wrap_quotes=wrap_quotes):
                 prefix, val = m.group(1), m.group(2).strip()
+                if val in self.KEEP_VALUES:
+                    return m.group(0)
                 token = self._get_token(category, val)
                 if wrap_quotes:
                     return f'{prefix}"{token}"'
@@ -87,26 +100,36 @@ class Masker:
             text = pattern.sub(repl, text)
         return text
 
-    def _mask_known_hostname(self, text):
-        """Propaga o hostname ja identificado (via padrao HOSTNAME) a
-        qualquer outro sitio onde apareca solto -- prompts, banners, etc."""
-        hostnames = [v for tok, v in self.mapping.items() if tok.startswith("HOSTNAME_")]
-        for hostname in hostnames:
-            token = self.reverse[hostname]
-            pattern = re.compile(r"\b" + re.escape(hostname) + r"\b")
-            text = pattern.sub(token, text)
+    def _propagate_known_values(self, text):
+        """Propaga valores ja aprendidos em linhas com contexto (hostname,
+        nomes de porta/VLAN, communities, users, keys) a qualquer outro sitio
+        onde aparecam soltos -- tabelas de show, prompts, nomes de ficheiro.
+        Fronteira: nao colado a alfanumerico nem '-'; o '_' conta como
+        separador (ex: 'SW-X_running.cfg')."""
+        values = [
+            v for tok, v in self.mapping.items()
+            if tok.rsplit("_", 1)[0] in self.PROPAGATE_CATEGORIES
+            and (len(v) >= self.PROPAGATE_MIN_LEN or tok.startswith("HOSTNAME_"))  # hostname curto (SW1) tambem
+            and v not in self.KEEP_VALUES
+        ]
+        for value in sorted(values, key=len, reverse=True):  # longos primeiro
+            token = self.reverse[value]
+            pattern = re.compile(r"(?<![A-Za-z0-9-])" + re.escape(value) + r"(?![A-Za-z0-9-])")
+            text = pattern.sub(lambda m, t=token: t, text)
         return text
 
     # ---------- API publica ----------
     def mask(self, text, line_patterns):
         text = self._mask_line_patterns(text, line_patterns)  # 1. contexto do vendor
-        text = self._mask_known_hostname(text)                 # 2. propaga hostname
+        text = self._propagate_known_values(text)             # 2. propaga valores aprendidos
         text = self._mask_simple_patterns(text)                 # 3. IP/MAC genericos
         return text
 
     def unmask(self, text):
-        for token, value in self.mapping.items():
-            text = re.sub(r"\b" + re.escape(token) + r"\b", lambda m, v=value: v, text)
+        # tokens longos primeiro; fronteira aceita '_' (ex: HOSTNAME_001_running.cfg)
+        for token in sorted(self.mapping, key=len, reverse=True):
+            value = self.mapping[token]
+            text = re.sub(r"(?<![A-Za-z0-9])" + re.escape(token) + r"(?!\d)", lambda m, v=value: v, text)
         return text
 
     def save_mapping(self, path):

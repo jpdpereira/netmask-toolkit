@@ -1,0 +1,95 @@
+SW-LAB-ACC-01# show system
+
+ Status and Counters - General System Information
+
+  System Name        : SW-LAB-ACC-01
+  System Contact     : Equipa Redes Lab
+  System Location    : Edificio Lab Piso 1
+  MAC Age Time (sec) : 300
+
+  Software revision  : WC.16.10.0009
+  Base MAC Addr      : 0a1b2c-3d4e01
+
+SW-LAB-ACC-01# show stacking
+
+ Stack ID         : 00010a1b2c-3d4e00
+ MAC Address      : 0a1b2c-3d4e01
+ Stack Topology   : Ring
+ Stack Status     : Active
+
+ Mbr
+ ID  Mac Address       Model                                   Pri Status
+ --- ----------------- --------------------------------------- --- ---------------
+  1  0a1b2c-3d4e01     Aruba JL322A 2930M-48G-PoE+ Switch      255 Commander
+  2  0a1b2c-3d4e02     Aruba JL322A 2930M-48G-PoE+ Switch      128 Standby
+
+SW-LAB-ACC-01# show running-config
+
+Running configuration:
+
+; JL322A Configuration Editor; Created on release #WC.16.10.0009
+hostname "SW-LAB-ACC-01"
+snmp-server contact "Equipa Redes Lab"
+snmp-server location "Edificio Lab Piso 1"
+tacacs-server host 10.99.4.10 key "fake-tacacs-key"
+snmp-server community "lab-fake-comm" operator unrestricted
+snmpv3 user "lab-snmpv3-user"
+interface 1/1/3
+   name "LAB-AP-03"
+   exit
+vlan 1
+   name "DEFAULT_VLAN"
+   exit
+vlan 20
+   name "LAB-USERS-PISO1"
+   untagged 1/1/3
+   exit
+
+SW-LAB-ACC-01# copy running-config tftp 10.99.4.30 SW-LAB-ACC-01_running_20260915.cfg
+
+SW-LAB-ACC-01# show interfaces status
+
+  Port     Name       Status  Config-mode   Speed    Type       Tagged Untagged
+  -------- ---------- ------- ------------- -------- ---------- ------ --------
+  1/1/3    LAB-AP-03  Up      Auto          1000FDx  100/1000T  No     20
+
+SW-LAB-ACC-01# show vlans
+
+ Status and Counters - VLAN Information
+
+  VLAN ID Name                             | Status     Voice Jumbo
+  ------- -------------------------------- + ---------- ----- -----
+  1       DEFAULT_VLAN                     | Port-based No    No
+  20      LAB-USERS-PISO1                  | Port-based No    No
+
+SW-LAB-ACC-01# show lldp info remote-device
+
+ LLDP Remote Devices Information
+
+  LocalPort | ChassisId                 PortId PortDescr SysName
+  --------- + ------------------------- ------ --------- ----------------------
+  1/1/49    | 0a1b2c-3d4e70             25     25        SW-LAB-CORE-01
+
+SW-LAB-ACC-01# show port-access clients
+
+ Port Access Client Status
+
+  Port  Client Name   MAC Address   IP Address      User Role  Type  VLAN
+  ----- ------------- ------------- --------------- ---------- ----- ------
+  1/1/5 lab.user01    0a1b2c-3d4e71 10.99.20.40     n/a        8021X 20
+
+SW-LAB-ACC-01# show snmp-server
+
+ SNMP Communities
+
+  Community Name       MIB View Write Access
+  -------------------- -------- ------------
+  lab-fake-comm        Manager  Unrestricted
+
+SW-LAB-ACC-01# show snmpv3 user
+
+ Status and Counters - SNMP v3 Global Configuration Information
+
+  User Name                        Auth. Protocol Privacy Protocol
+  -------------------------------- -------------- -----------------
+  lab-snmpv3-user                  SHA            CFB AES-128

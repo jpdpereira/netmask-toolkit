@@ -303,3 +303,13 @@ def test_mac_address_hpe_aos_switch_format_is_masked():
     assert "WC.16.10.0009" in masked
     # roundtrip exato
     assert masker.unmask(masked) == text
+
+
+def test_short_hostname_still_propagates_to_prompt():
+    """Regressao: PROPAGATE_MIN_LEN nao se aplica ao hostname -- 'SW1#'
+    em prompts tem de ser mascarado como no comportamento original."""
+    masker = Masker()
+    text = 'hostname "SW1"\nSW1# show vlans\n'
+    masked = masker.mask(text, get_profile("aruba-switch"))
+    assert "SW1" not in masked
+    assert masker.unmask(masked) == text
