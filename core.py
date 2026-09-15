@@ -61,7 +61,7 @@ class Masker:
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5}\b")),
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\b")),
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{6}-[0-9A-Fa-f]{6}\b")),  # HPE AOS-Switch: xxxxxx-xxxxxx
-        ("STACK_ID", re.compile(r"\b[0-9A-Fa-f]{4}[0-9A-Fa-f]{6}-[0-9A-Fa-f]{6}\b")),  # show stacking
+        ("STACK_ID", re.compile(r"\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{8}\b")),  # show stacking WC.16.10: 0001+MAC em 8-8
         # formato separado por espacos, comum em ChassisId de HP/Aruba (ex: "ec eb b8 a8 99 00")
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{2}(?: [0-9A-Fa-f]{2}){5}\b")),
         # candidato amplo para IPv6 (inclui notacao comprimida "::");

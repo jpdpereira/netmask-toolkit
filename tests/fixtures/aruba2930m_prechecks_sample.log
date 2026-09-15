@@ -12,7 +12,7 @@ SW-LAB-ACC-01# show system
 
 SW-LAB-ACC-01# show stacking
 
- Stack ID         : 00010a1b2c-3d4e00
+ Stack ID         : 00010a1b-2c3d4e00
  MAC Address      : 0a1b2c-3d4e01
  Stack Topology   : Ring
  Stack Status     : Active

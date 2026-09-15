@@ -36,7 +36,7 @@ LEAKS = [
     ("F-lldp-portdescr-espacos", "Uplink to"),
     ("G-8021x-username", "lab.user01"),
     ("H-hostname-em-ficheiro", "SW-LAB-ACC-01"),
-    ("I-mac-no-stack-id", "0a1b2c-3d4e00"),
+    ("I-mac-no-stack-id", "00010a1b-2c3d4e00"),
 ]
 
 
