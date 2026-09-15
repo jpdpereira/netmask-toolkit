@@ -313,3 +313,20 @@ def test_short_hostname_still_propagates_to_prompt():
     masked = masker.mask(text, get_profile("aruba-switch"))
     assert "SW1" not in masked
     assert masker.unmask(masked) == text
+
+
+def test_mac_address_comware_format_is_masked():
+    """Comware (5710/5945/5130...) mostra MACs como 'xxxx-xxxx-xxxx' em
+    display mac-address, display arp, display lldp e display irf."""
+    masker = Masker()
+    text = (
+        "MAC Address    VLAN ID  State            Port/Nickname\n"
+        "0a1b-2c3d-4e5f 20       Learned          XGE1/0/12\n"
+        "Bridge MAC : 0A1B-2C3D-4E60\n"
+        "HPE Comware Software, Version 7.1.070, Release 2702P01\n"
+    )
+    masked = masker.mask(text, get_profile("comware"))
+    assert "0a1b-2c3d-4e5f" not in masked
+    assert "0A1B-2C3D-4E60" not in masked
+    assert "7.1.070" in masked and "2702P01" in masked  # sem falso positivo
+    assert masker.unmask(masked) == text

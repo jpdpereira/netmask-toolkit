@@ -81,6 +81,13 @@ VENDOR_PROFILES = {
         # "securityname" na linha de target-host (trap) -- tambem e uma credencial,
         # aparece a meio da linha, nao no inicio
         ("SNMP_COMMUNITY", re.compile(r"(params securityname\s+)(\S+)", _MI), False),
+        # gaps encontrados ao validar log real de pre-checks (5710, 7.1.070)
+        ("VRF", re.compile(r"(vpn-instance[ \t]+)(\S+)", _MI), False),
+        ("DOMAIN", re.compile(r"^([ \t]*domain[ \t]+(?:default[ \t]+enable[ \t]+)?)(\S+)", _MI), False),
+        ("USERNAME", re.compile(r"^([ \t]*local-user[ \t]+)(\S+)", _MI), False),
+        ("USERNAME", re.compile(r"((?:for user|User(?:Name)?=|SHELL_LOG(?:IN|OUT):)[ \t]*)([^\s;,]+)", _MI), False),
+        ("AAA_KEY", re.compile(r"^([ \t]*\S.*?[ \t](?:cipher|hash)[ \t]+)(\$[chp]\$\S+)", _MI), False),
+        ("SERIAL", re.compile(r"^([ \t]*DEVICE_SERIAL_NUMBER[ \t]*:[ \t]*)(\S+)", _MI), False),
     ],
 
     # Juniper JunOS (estilo "set")
