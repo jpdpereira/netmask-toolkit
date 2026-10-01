@@ -36,6 +36,9 @@ VENDOR_PROFILES = {
         ("SNMP_COMMUNITY", re.compile(r"^(\s*snmp-server community\s+)(\S+)", _MI), False),
         ("SNMP_CONTACT", re.compile(r"^(\s*snmp-server contact\s+)(.+)$", _MI), False),
         ("SNMP_LOCATION", re.compile(r"^(\s*snmp-server location\s+)(.+)$", _MI), False),
+        # gaps encontrados com fixtures sinteticas
+        ("AAA_KEY", re.compile(r"^(\s*(?:tacacs|radius)-server host\s+\S+.*?\skey\s+(?:\d\s+)?)(\S+)", _MI), False),
+        ("DOMAIN", re.compile(r"^(\s*ip domain[- ]name\s+)(\S+)", _MI), False),
     ],
 
     # HPE Aruba AOS-Switch (ex-ProVision/ProCurve: 2530, 2920, 2930...)
@@ -56,6 +59,16 @@ VENDOR_PROFILES = {
         ("SNMP_LOCATION", re.compile(r"^([ \t]*System Location[ \t]*:[ \t]*)(\S(?:[^\n]*\S)?)", _MI), False),
         # show port-access clients: username imediatamente antes de um MAC HPE
         ("USERNAME", re.compile(r"^([ \t]*\d+(?:/\d+){0,2}[ \t]+)([^\s|]\S*)(?=[ \t]+[0-9A-Fa-f]{6}-[0-9A-Fa-f]{6}\b)", _MI), False),
+        # hostname a partir do prompt: em outputs de "show" soltos nao ha
+        # diretiva "hostname", o nome so existe na linha de prompt
+        # cobre "SW1#", "SW1# show ip" e "SW1(config)#"
+        ("HOSTNAME", re.compile(
+            r"^([ \t]*)([A-Za-z][\w.-]*)(?=(?:\([^)]*\))?#(?:[ \t]|$))",
+            re.MULTILINE), False),
+        # dominio DNS -- identifica a organizacao tao bem como o hostname
+        ("DOMAIN", re.compile(r'^([ \t]*ip dns domain-name[ \t]+)"([^"]*)"', _MI), True),
+        ("DOMAIN", re.compile(r'^([ \t]*ip dns domain-name[ \t]+)(?!")(\S+)', _MI), False),
+        ("DOMAIN", re.compile(r"^([ \t]*Domain Suffix[ \t]*:[ \t]*)(\S+)", _MI), False),
     ],
 
     # HPE Aruba AOS-CX
@@ -64,6 +77,9 @@ VENDOR_PROFILES = {
         ("DESC", re.compile(r'^(\s*description\s+)"([^"]*)"', _MI), True),
         ("NEIGHBOR", re.compile(r"^(\s*Neighbor Name\s*:\s*)(\S+)", _MI), False),
         ("PORTID", re.compile(r"^(\s*Neighbor Port-Description\s*:\s*)(.+)$", _MI), False),
+        # gaps encontrados com fixtures sinteticas
+        ("SNMP_COMMUNITY", re.compile(r"^(\s*snmp-server community\s+)(\S+)", _MI), False),
+        ("DOMAIN", re.compile(r"^(\s*ip dns domain-name\s+)(\S+)", _MI), False),
     ],
 
     # HPE Comware (v5/v7)
@@ -100,6 +116,16 @@ VENDOR_PROFILES = {
 
     # FortiOS (FortiGate)
     "fortios": [
+        # gaps encontrados com fixtures sinteticas
+        ("DOMAIN", re.compile(r'^(\s*set domain\s+)"([^"]*)"', _MI), True),
+        ("DOMAIN", re.compile(r'^(\s*set domain\s+)(?!")(\S+)', _MI), False),
+        ("SNMP_CONTACT", re.compile(r'^(\s*set contact-info\s+)"([^"]*)"', _MI), True),
+        ("SNMP_LOCATION", re.compile(r'^(\s*set location\s+)"([^"]*)"', _MI), True),
+        # "set name" cobre a community SNMP; sem contexto de bloco apanha
+        # tambem nomes de outros objetos -- mascarar a mais e seguro
+        ("SNMP_COMMUNITY", re.compile(r'^(\s*set name\s+)"([^"]*)"', _MI), True),
+        ("AAA_KEY", re.compile(r'^(\s*set (?:secret|psksecret|key|password|passwd)\s+)"([^"]*)"', _MI), True),
+        ("AAA_KEY", re.compile(r'^(\s*set (?:secret|psksecret|key|password|passwd)\s+)(?!")(\S+)', _MI), False),
         ("HOSTNAME", re.compile(r'^(\s*set hostname\s+)"([^"]*)"', _MI), True),
         ("DESC", re.compile(r'^(\s*set alias\s+)"([^"]*)"', _MI), True),        # descricao de interface = "alias"
         ("DESC", re.compile(r'^(\s*set description\s+)"([^"]*)"', _MI), True), # description generico noutros objetos
@@ -107,6 +133,14 @@ VENDOR_PROFILES = {
 
     # Check Point Gaia (clish)
     "checkpoint": [
+        # gaps encontrados com fixtures sinteticas
+        ("DOMAIN", re.compile(r"^(\s*set domainname\s+)(\S+)", _MI), False),
+        ("SNMP_COMMUNITY", re.compile(r"^(\s*set snmp community\s+)(\S+)", _MI), False),
+        ("SNMP_CONTACT", re.compile(r'^(\s*set snmp contact\s+)"([^"]*)"', _MI), True),
+        ("SNMP_CONTACT", re.compile(r'^(\s*set snmp contact\s+)(?!")(\S+)', _MI), False),
+        ("SNMP_LOCATION", re.compile(r'^(\s*set snmp location\s+)"([^"]*)"', _MI), True),
+        ("SNMP_LOCATION", re.compile(r'^(\s*set snmp location\s+)(?!")(\S+)', _MI), False),
+        ("AAA_KEY", re.compile(r"^(\s*set .*?\bsecret\s+)(\S+)", _MI), False),
         ("HOSTNAME", re.compile(r"^(\s*set hostname\s+)(\S+)", _MI), False),
         ("DESC", re.compile(r'^(\s*set interface \S+ description\s+)"([^"]*)"', _MI), True),
     ],
