@@ -41,25 +41,34 @@ class Masker:
 
     # ---------- padroes simples (universais, qualquer vendor) ----------
     # valores default/tecnicos que nunca sao mascarados (evita ruido)
-    KEEP_VALUES: ClassVar[frozenset] = frozenset({"DEFAULT_VLAN"})
+    KEEP_VALUES: ClassVar[frozenset] = frozenset({"DEFAULT_VLAN", "NONE", "system", "-"})
     # categorias cujo valor, aprendido numa linha com contexto, e propagado
     # ao resto do texto (tabelas de show, prompts, nomes de ficheiro)
     PROPAGATE_CATEGORIES: ClassVar[frozenset] = frozenset({
         "HOSTNAME", "DESC", "NEIGHBOR", "SNMP_COMMUNITY", "SNMP_CONTACT",
         "SNMP_LOCATION", "SNMPV3_USER", "USERNAME", "AAA_KEY",
+        "VLAN_NAME", "VRF", "DOMAIN",
     })
     PROPAGATE_MIN_LEN: ClassVar[int] = 4  # evita propagar nomes curtos/genericos
 
     # tabelas de largura fixa sem "Campo :" para ancorar regex:
     # (regex do cabecalho, {nome da coluna: categoria do token})
+    # linha de prompt (Comware <HOST>/[HOST], AOS/Cisco HOST#) termina qualquer tabela
+    PROMPT_RE: ClassVar = re.compile(r"^\s*(?:[<\[][^>\]\s]+[>\]]|\S+[#>])\s*\S")
+
     TABLE_COLUMNS: ClassVar[list] = [
         # AOS-Switch: show lldp info remote-device (resumo)
         (re.compile(r"^[ \t]*LocalPort[ \t]*\|.*\bSysName\b"), {"PortDescr": "PORTID", "SysName": "NEIGHBOR"}),
+        # Comware: display interface brief (bridge/route mode) -- Description truncada
+        (re.compile(r"^Interface[ \t]+Link[ \t]+(?:Speed|Protocol)\b.*\bDescription[ \t]*$"), {"Description": "DESC"}),
+        # Comware: display lldp neighbor-information list -- System Name (ultima coluna, nome com espaco)
+        (re.compile(r"^Local Interface[ \t]+Chassis ID[ \t]+Port ID[ \t]+System Name[ \t]*$"), {"System Name": "NEIGHBOR"}),
     ]
 
     SIMPLE_PATTERNS: ClassVar[list] = [
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{2}([:-][0-9A-Fa-f]{2}){5}\b")),
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\.[0-9A-Fa-f]{4}\b")),
+        ("MAC", re.compile(r"\b[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}\b")),  # HPE Comware: xxxx-xxxx-xxxx
         ("MAC", re.compile(r"\b[0-9A-Fa-f]{6}-[0-9A-Fa-f]{6}\b")),  # HPE AOS-Switch: xxxxxx-xxxxxx
         ("STACK_ID", re.compile(r"\b[0-9A-Fa-f]{8}-[0-9A-Fa-f]{8}\b")),  # show stacking WC.16.10: 0001+MAC em 8-8
         # formato separado por espacos, comum em ChassisId de HP/Aruba (ex: "ec eb b8 a8 99 00")
@@ -132,9 +141,16 @@ class Masker:
                 for idx, h in enumerate(header)
                 if h.group(0) in spec
             ]
+            # colunas com nome multi-palavra ("System Name"): fim = inicio da palavra seguinte do cabecalho
+            for name, category in spec.items():
+                if " " in name and name in lines[i]:
+                    st = lines[i].index(name)
+                    nxt = [h.start() for h in header if h.start() >= st + len(name)]
+                    spans.append((st, nxt[0] if nxt else None, category))
             needs_pipe = "|" in lines[i]
             j = i + (2 if is_sep else 1)
-            while j < len(lines) and lines[j].strip() and (not needs_pipe or "|" in lines[j]):
+            while (j < len(lines) and lines[j].strip() and (not needs_pipe or "|" in lines[j])
+                   and not self.PROMPT_RE.match(lines[j])):
                 row = lines[j]
                 for start, end, category in sorted(spans, reverse=True):
                     cell = row[start:end]
