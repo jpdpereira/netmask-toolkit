@@ -56,6 +56,16 @@ VENDOR_PROFILES = {
         ("SNMP_LOCATION", re.compile(r"^([ \t]*System Location[ \t]*:[ \t]*)(\S(?:[^\n]*\S)?)", _MI), False),
         # show port-access clients: username imediatamente antes de um MAC HPE
         ("USERNAME", re.compile(r"^([ \t]*\d+(?:/\d+){0,2}[ \t]+)([^\s|]\S*)(?=[ \t]+[0-9A-Fa-f]{6}-[0-9A-Fa-f]{6}\b)", _MI), False),
+        # hostname a partir do prompt: em outputs de "show" soltos nao ha
+        # diretiva "hostname", o nome so existe na linha de prompt
+        # cobre "SW1#", "SW1# show ip" e "SW1(config)#"
+        ("HOSTNAME", re.compile(
+            r"^([ \t]*)([A-Za-z][\w.-]*)(?=(?:\([^)]*\))?#(?:[ \t]|$))",
+            re.MULTILINE), False),
+        # dominio DNS -- identifica a organizacao tao bem como o hostname
+        ("DOMAIN", re.compile(r'^([ \t]*ip dns domain-name[ \t]+)"([^"]*)"', _MI), True),
+        ("DOMAIN", re.compile(r'^([ \t]*ip dns domain-name[ \t]+)(?!")(\S+)', _MI), False),
+        ("DOMAIN", re.compile(r"^([ \t]*Domain Suffix[ \t]*:[ \t]*)(\S+)", _MI), False),
     ],
 
     # HPE Aruba AOS-CX
