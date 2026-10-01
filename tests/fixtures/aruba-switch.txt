@@ -1,0 +1,14 @@
+SW-LAB-01# show running-config
+hostname "SW-LAB-01"
+snmp-server community "COMM-TESTE" unrestricted
+snmp-server contact "noc@exemplo.local" location "Sala LAB"
+tacacs-server host 192.0.2.10 key "CHAVE-TESTE-123"
+ip dns domain-name "exemplo.local"
+interface 1
+   name "Uplink-LAB-CORE"
+   exit
+SW-LAB-01# show mac-address
+ 0a1b2c-3d4e5f 1/1/12  20
+SW-LAB-01# show lldp info remote-device
+  SysName    : SW-LAB-02
+  PortDescr  : Uplink-LAB-CORE
