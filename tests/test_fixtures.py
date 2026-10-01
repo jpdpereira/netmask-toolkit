@@ -1,9 +1,10 @@
 """Verificacao transversal: cada amostra sintetica de cada vendor tem de
 ficar sem sentinelas depois de mascarada, e tem de reverter exatamente."""
 import pathlib
-import pytest
 import sys
 from pathlib import Path
+
+import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 from core import Masker

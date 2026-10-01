@@ -18,7 +18,6 @@ import re
 from pathlib import Path
 from typing import ClassVar
 
-
 _TOKEN_SHAPE = re.compile(r"^[A-Z][A-Z0-9_]*_\d{3,}$")
 
 
