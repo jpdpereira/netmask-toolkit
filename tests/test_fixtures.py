@@ -22,7 +22,6 @@ SENTINELAS = [
 # Falhas conhecidas, com causa identificada -- nao sao regressoes:
 XFAIL_FUGAS = {
     "aruba-cx": "colunas da tabela LLDP ainda nao tratadas (core._mask_table_columns)",
-    "comware": "padrao DOMAIN vive na branch fix/comware-mac-and-tables; so passa depois do merge",
 }
 
 

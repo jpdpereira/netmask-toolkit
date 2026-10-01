@@ -1,0 +1,62 @@
+<SW-LAB-CORE-02>display device manuinfo
+Slot 1 CPU 0:
+DEVICE_NAME          : HPE 5710 48XGT 6QS+/2QS28 JL586A
+DEVICE_SERIAL_NUMBER : CN00LAB001
+MAC_ADDRESS          : 0a1b-2c3d-4e00
+MANUFACTURING_DATE   : 2021-01-01
+ Fan 1:
+DEVICE_SERIAL_NUMBER : NONE
+
+<SW-LAB-CORE-02>display current-configuration
+#
+ sysname SW-LAB-CORE-02
+#
+ip vpn-instance LAB-VRF-CLIENTE
+ route-distinguisher 65001:10
+#
+vlan 10
+ name LAB-SRV-PRODUCAO-DC1
+#
+interface Ten-GigabitEthernet1/0/1
+ description LAB-UPLINK-PARA-CORE-EDIFICIO-A
+ port link-type trunk
+#
+interface Vlan-interface10
+ ip binding vpn-instance LAB-VRF-CLIENTE
+ ip address 10.99.10.1 255.255.255.0
+#
+bgp 65001
+#
+domain system
+#
+domain lab-dominio.local
+#
+local-user lab.operador class manage
+ password hash $h$6$fakehash$fakevalue==
+ authorization-attribute user-role network-admin
+#
+return
+<SW-LAB-CORE-02>display vlan brief
+Brief information about all VLANs:
+VLAN ID   Name                             Port
+1         VLAN 0001                        XGE1/0/2
+10        LAB-SRV-PRODUCAO-DC1             XGE1/0/1
+
+<SW-LAB-CORE-02>display lldp neighbor-information list
+Chassis ID : * -- -- Nearest nontransmit bridge neighbor
+             # -- -- Nearest customer bridge neighbor
+             Default -- -- Nearest bridge neighbor
+Local Interface Chassis ID      Port ID                    System Name
+XGE1/0/2        0a1b-2c3d-4e10  0a1b-2c3d-4e10             -
+XGE1/0/49       0a1b-2c3d-4e11  Ten-GigabitEthernet1/0/49  LAB-CORE-VIZINHO-01
+<SW-LAB-CORE-02>display link-aggregation verbose Bridge-Aggregation1
+
+<SW-LAB-CORE-02>display interface brief
+Brief information on interfaces in bridge mode:
+Link: ADM - administratively down; Stby - standby
+Interface            Link Speed   Duplex Type PVID Description
+XGE1/0/1             UP   10G(a)  F(a)   T    1    LAB-UPLINK-PARA-CORE-EDIF
+
+<SW-LAB-CORE-02>display logbuffer reverse
+%Sep 15 10:00:00:123 2026 SW-LAB-CORE-02 SHELL/5/SHELL_LOGIN: lab.operador logged in from 10.99.4.50.
+%Sep 15 09:00:00:123 2026 SW-LAB-CORE-02 SSHS/6/SSHS_LOG: Authentication failed for user lab.intruso from 10.99.4.51 port 50000.
