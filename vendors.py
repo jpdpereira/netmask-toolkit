@@ -109,6 +109,16 @@ VENDOR_PROFILES = {
 
     # FortiOS (FortiGate)
     "fortios": [
+        # gaps encontrados com fixtures sinteticas
+        ("DOMAIN", re.compile(r'^(\s*set domain\s+)"([^"]*)"', _MI), True),
+        ("DOMAIN", re.compile(r'^(\s*set domain\s+)(?!")(\S+)', _MI), False),
+        ("SNMP_CONTACT", re.compile(r'^(\s*set contact-info\s+)"([^"]*)"', _MI), True),
+        ("SNMP_LOCATION", re.compile(r'^(\s*set location\s+)"([^"]*)"', _MI), True),
+        # "set name" cobre a community SNMP; sem contexto de bloco apanha
+        # tambem nomes de outros objetos -- mascarar a mais e seguro
+        ("SNMP_COMMUNITY", re.compile(r'^(\s*set name\s+)"([^"]*)"', _MI), True),
+        ("AAA_KEY", re.compile(r'^(\s*set (?:secret|psksecret|key|password|passwd)\s+)"([^"]*)"', _MI), True),
+        ("AAA_KEY", re.compile(r'^(\s*set (?:secret|psksecret|key|password|passwd)\s+)(?!")(\S+)', _MI), False),
         ("HOSTNAME", re.compile(r'^(\s*set hostname\s+)"([^"]*)"', _MI), True),
         ("DESC", re.compile(r'^(\s*set alias\s+)"([^"]*)"', _MI), True),        # descricao de interface = "alias"
         ("DESC", re.compile(r'^(\s*set description\s+)"([^"]*)"', _MI), True), # description generico noutros objetos
@@ -116,6 +126,14 @@ VENDOR_PROFILES = {
 
     # Check Point Gaia (clish)
     "checkpoint": [
+        # gaps encontrados com fixtures sinteticas
+        ("DOMAIN", re.compile(r"^(\s*set domainname\s+)(\S+)", _MI), False),
+        ("SNMP_COMMUNITY", re.compile(r"^(\s*set snmp community\s+)(\S+)", _MI), False),
+        ("SNMP_CONTACT", re.compile(r'^(\s*set snmp contact\s+)"([^"]*)"', _MI), True),
+        ("SNMP_CONTACT", re.compile(r'^(\s*set snmp contact\s+)(?!")(\S+)', _MI), False),
+        ("SNMP_LOCATION", re.compile(r'^(\s*set snmp location\s+)"([^"]*)"', _MI), True),
+        ("SNMP_LOCATION", re.compile(r'^(\s*set snmp location\s+)(?!")(\S+)', _MI), False),
+        ("AAA_KEY", re.compile(r"^(\s*set .*?\bsecret\s+)(\S+)", _MI), False),
         ("HOSTNAME", re.compile(r"^(\s*set hostname\s+)(\S+)", _MI), False),
         ("DESC", re.compile(r'^(\s*set interface \S+ description\s+)"([^"]*)"', _MI), True),
     ],

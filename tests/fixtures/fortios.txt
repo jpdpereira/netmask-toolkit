@@ -1,0 +1,32 @@
+SW-LAB-01 # show
+config system global
+    set hostname "SW-LAB-01"
+end
+config system dns
+    set primary 192.0.2.53
+    set domain "exemplo.local"
+end
+config system interface
+    edit "port1"
+        set ip 192.0.2.10 255.255.255.0
+        set alias "Uplink-LAB-CORE"
+        set description "Uplink-LAB-CORE"
+    next
+end
+config system snmp sysinfo
+    set contact-info "noc@exemplo.local"
+    set location "Sala LAB"
+end
+config system snmp community
+    edit 1
+        set name "COMM-TESTE"
+    next
+end
+config user radius
+    edit "RADIUS-LAB"
+        set server "192.0.2.20"
+        set secret CHAVE-TESTE-123
+    next
+end
+SW-LAB-01 # get system arp
+192.0.2.30     0a:1b:2c:3d:4e:60   port1

@@ -1,0 +1,13 @@
+SW-LAB-01> show configuration
+set hostname SW-LAB-01
+set domainname exemplo.local
+set dns primary 192.0.2.53
+set interface eth1 description "Uplink-LAB-CORE"
+set interface eth1 ipv4-address 192.0.2.10 mask-length 24
+set static-route 198.51.100.0/24 nexthop gateway address 192.0.2.1 on
+set snmp community COMM-TESTE read-only
+set snmp contact "noc@exemplo.local"
+set snmp location "Sala LAB"
+set aaa radius-servers server 192.0.2.20 secret CHAVE-TESTE-123
+SW-LAB-01> show arp dynamic all
+192.0.2.30   0a:1b:2c:3d:4e:60   eth1
