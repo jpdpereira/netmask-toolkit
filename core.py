@@ -19,6 +19,9 @@ from pathlib import Path
 from typing import ClassVar
 
 
+_TOKEN_SHAPE = re.compile(r"^[A-Z][A-Z0-9_]*_\d{3,}$")
+
+
 class Masker:
     def __init__(self):
         self.mapping = {}   # token -> valor real
@@ -32,6 +35,11 @@ class Masker:
         return f"{category}_{n:03d}"
 
     def _get_token(self, category, value):
+        # idempotencia: um valor que ja tem forma de marcador (HOSTNAME_001)
+        # nao volta a ser mascarado -- caso contrario uma segunda passagem,
+        # ou um ficheiro ja mascarado, gera tokens de tokens e quebra o unmask
+        if _TOKEN_SHAPE.match(value):
+            return value
         if value in self.reverse:
             return self.reverse[value]
         token = self._next_token(category)

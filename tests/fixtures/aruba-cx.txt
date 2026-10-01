@@ -1,0 +1,10 @@
+SW-LAB-01# show running-config
+hostname SW-LAB-01
+user admin group administrators password ciphertext AQBapCHAVETESTE123
+tacacs-server host 192.0.2.10 key ciphertext AQBapCHAVETESTE456
+snmp-server community COMM-TESTE
+ip dns domain-name exemplo.local
+interface 1/1/1
+    description "Uplink-LAB-CORE"
+SW-LAB-01# show lldp neighbor-info
+1/1/1  0a:1b:2c:3d:4e:60  1/1/1  Uplink-LAB-CORE  120  SW-LAB-02

@@ -1,0 +1,12 @@
+<SW-LAB-01>display current-configuration
+ sysname SW-LAB-01
+ snmp-agent community read cipher COMM-TESTE
+ snmp-agent sys-info contact noc@exemplo.local
+ snmp-agent sys-info location Sala LAB
+ domain exemplo.local
+ local-user admin
+interface Ten-GigabitEthernet1/0/1
+ description Uplink-LAB-CORE
+<SW-LAB-01>display lldp neighbor-information list
+ System name : SW-LAB-02
+ Port description : Uplink-LAB-CORE

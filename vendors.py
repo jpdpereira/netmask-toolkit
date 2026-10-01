@@ -36,6 +36,9 @@ VENDOR_PROFILES = {
         ("SNMP_COMMUNITY", re.compile(r"^(\s*snmp-server community\s+)(\S+)", _MI), False),
         ("SNMP_CONTACT", re.compile(r"^(\s*snmp-server contact\s+)(.+)$", _MI), False),
         ("SNMP_LOCATION", re.compile(r"^(\s*snmp-server location\s+)(.+)$", _MI), False),
+        # gaps encontrados com fixtures sinteticas
+        ("AAA_KEY", re.compile(r"^(\s*(?:tacacs|radius)-server host\s+\S+.*?\skey\s+(?:\d\s+)?)(\S+)", _MI), False),
+        ("DOMAIN", re.compile(r"^(\s*ip domain[- ]name\s+)(\S+)", _MI), False),
     ],
 
     # HPE Aruba AOS-Switch (ex-ProVision/ProCurve: 2530, 2920, 2930...)
@@ -74,6 +77,9 @@ VENDOR_PROFILES = {
         ("DESC", re.compile(r'^(\s*description\s+)"([^"]*)"', _MI), True),
         ("NEIGHBOR", re.compile(r"^(\s*Neighbor Name\s*:\s*)(\S+)", _MI), False),
         ("PORTID", re.compile(r"^(\s*Neighbor Port-Description\s*:\s*)(.+)$", _MI), False),
+        # gaps encontrados com fixtures sinteticas
+        ("SNMP_COMMUNITY", re.compile(r"^(\s*snmp-server community\s+)(\S+)", _MI), False),
+        ("DOMAIN", re.compile(r"^(\s*ip dns domain-name\s+)(\S+)", _MI), False),
     ],
 
     # HPE Comware (v5/v7)

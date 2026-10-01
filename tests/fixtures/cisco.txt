@@ -1,0 +1,13 @@
+SW-LAB-01#show running-config
+hostname SW-LAB-01
+snmp-server community COMM-TESTE RO
+snmp-server contact noc@exemplo.local
+snmp-server location Sala LAB
+tacacs-server host 192.0.2.10 key CHAVE-TESTE-123
+ip domain-name exemplo.local
+interface GigabitEthernet0/1
+ description Uplink-LAB-CORE
+SW-LAB-01#show cdp neighbors detail
+Device ID: SW-LAB-02
+ IP address: 198.51.100.20
+ 0a1b.2c3d.4e61
